@@ -79,7 +79,7 @@ import cappylib.<module>
 help(cappylib.<module>)
 ```
 
-for docstrings associated with <module>.
+for docstrings associated with \<module\>.
 
 ## Usage and Examples
 
@@ -89,7 +89,7 @@ To import all cappylib modules directly into your scripts symbol table, use:
 from cappylib import *
 ```
 
-(You can replace * with <module>)
+(You can replace * with \<module\>)
 
 Or you can import a specific module into the cappylib namespace using:
 
@@ -114,7 +114,7 @@ contained in the function main() in each module.
 
 You can run the unit tests yourself using:
 
-    $ python -m cappylib.<module>
+    $ python -m cappylib.\<module\>
 
 Or all unit tests using:
    
