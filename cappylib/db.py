@@ -41,7 +41,7 @@
 ##############################################################################################
 
 import mysql.connector
-from general import *
+from cappylib.general import *
 
 ##############################################################################################
 # GLOBAL VARS 
@@ -117,26 +117,28 @@ def queryMysql(db, query, **inputs):
 # TESTING #
 ##############################################################################################
 
+def main():
+
+    # queryMysql test
+    db = {
+        'user': 'devtest',
+        'password': 'devtest',
+        'host': 'localhost',
+        'database': 'devtest'
+        }
+    queryMysql(db, 'DROP TABLE IF EXISTS devtest')
+    queryMysql(db, ('CREATE TABLE IF NOT EXISTS devtest (' + 
+                    'id INT(9) UNSIGNED ZEROFILL NOT NULL AUTO_INCREMENT PRIMARY KEY, ' +
+                    'a INT(6) UNSIGNED ZEROFILL, b VARCHAR(60), ' + 
+                    'c TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)'))
+    for i in range(0, 50): 
+        queryMysql(db, 'INSERT INTO devtest(a, b) VALUES(%(a)s, %(b)s)', a=(i * i), 
+                   b='index was {0}'.format(i))
+    print aColor('BLUE') + 'queryMysql...', aColor('OFF'), \
+        queryMysql(db, 'SELECT * FROM devtest WHERE id=%(id)s', id=20)
+
 if __name__ == '__main__':
 
     try:
-
-        # queryMysql test
-        db = {
-            'user': 'devtest',
-            'password': 'devtest',
-            'host': 'localhost',
-            'database': 'devtest'
-            }
-        queryMysql(db, 'DROP TABLE IF EXISTS devtest')
-        queryMysql(db, ('CREATE TABLE IF NOT EXISTS devtest (' + 
-                        'id INT(9) UNSIGNED ZEROFILL NOT NULL AUTO_INCREMENT PRIMARY KEY, ' +
-                        'a INT(6) UNSIGNED ZEROFILL, b VARCHAR(60), ' + 
-                        'c TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)'))
-        for i in range(0, 50): 
-            queryMysql(db, 'INSERT INTO devtest(a, b) VALUES(%(a)s, %(b)s)', a=(i * i), 
-                       b='index was {0}'.format(i))
-        print aColor('BLUE') + 'queryMysql...', aColor('OFF'), \
-            queryMysql(db, 'SELECT * FROM devtest WHERE id=%(id)s', id=20)
-
+        main()
     except error as e: print e.error

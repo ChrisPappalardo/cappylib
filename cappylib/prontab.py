@@ -22,32 +22,13 @@
 # DEALINGS IN THE SOFTWARE.
 #
 ##############################################################################################
-#
-# MySQL and all related client libraries, including the MySQL Connector/Python, are
-# Copyright (C) Oracle Corporation and its affiliated companies ("Oracle").  Use and
-# distribution in this case is permitted under Oracle's Free and Open Source Software
-# ("FOSS") License Exception, which allows developers of FOSS applications (including those
-# licensed under the MIT License as of the original copyright date) to include Oracle's MySQL
-# Client Libraries with their FOSS applications.  MySQL Client Libraries are typically
-# licensed pursuant to version 2 of the General Public License ("GPL"), but this exception
-# permits distribution of certain MySQL Client Libraries with a developer's FOSS applications
-# licensed under the terms of another FOSS license, even though such other FOSS license may
-# be incompatible with the GPL.
-#
-##############################################################################################
-#
-# pika is Copyright (C) 2009-2011 VMWare, Inc. and Tony Garnock-Jones.  Use, modification, and
-# distribution is subject to the Mozilla Public License, Version 1.1, which can be obtained 
-# from http://www.mozilla.org/MPL/
-#
-##############################################################################################
 
 ##############################################################################################
 # IMPORTS 
 ##############################################################################################
 
 import datetime, os, time
-from general import *
+from cappylib.general import *
 #import sys, re, mysql.connector, socket, os, pika, logging, ast, time
 #from mysql.connector import errorcode
 #from datetime import datetime, timedelta
@@ -164,19 +145,21 @@ class Prontab(object):
 # TESTING #
 ##############################################################################################
 
+def main():
+
+    # prontab test
+    def prontabTask(i, *args):
+        if i == 3: raise error(*args)
+    print 'prontab.run()...'
+    try:
+        p = Prontab(ProntabEvent(prontabTask, args=[1]),
+                    ProntabEvent(prontabTask, args=[2]),
+                    ProntabEvent(prontabTask, args=[3, 'test','term - ','prontab finished 3 tasks']))
+        p.run()
+    except error as e: print ' ...Done(', e.error, ')'
+
 if __name__ == '__main__':
 
     try:
-
-        # prontab test
-        def prontabTask(i, *args):
-            if i == 3: raise error(*args)
-        print 'prontab.run()...'
-        try:
-            p = Prontab(ProntabEvent(prontabTask, args=[1]),
-                        ProntabEvent(prontabTask, args=[2]),
-                        ProntabEvent(prontabTask, args=[3, 'test','term - ','prontab finished 3 tasks']))
-            p.run()
-        except error as e: print ' ...Done(', e.error, ')'
-
+        main()
     except error as e: print e.error

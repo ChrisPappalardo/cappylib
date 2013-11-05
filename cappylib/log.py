@@ -23,19 +23,6 @@
 #
 ##############################################################################################
 #
-# MySQL and all related client libraries, including the MySQL Connector/Python, are
-# Copyright (C) Oracle Corporation and its affiliated companies ("Oracle").  Use and
-# distribution in this case is permitted under Oracle's Free and Open Source Software
-# ("FOSS") License Exception, which allows developers of FOSS applications (including those
-# licensed under the MIT License as of the original copyright date) to include Oracle's MySQL
-# Client Libraries with their FOSS applications.  MySQL Client Libraries are typically
-# licensed pursuant to version 2 of the General Public License ("GPL"), but this exception
-# permits distribution of certain MySQL Client Libraries with a developer's FOSS applications
-# licensed under the terms of another FOSS license, even though such other FOSS license may
-# be incompatible with the GPL.
-#
-##############################################################################################
-#
 # pika is Copyright (C) 2009-2011 VMWare, Inc. and Tony Garnock-Jones.  Use, modification, and
 # distribution is subject to the Mozilla Public License, Version 1.1, which can be obtained
 # from http://www.mozilla.org/MPL/
@@ -47,8 +34,8 @@
 ##############################################################################################
 
 import socket, os, datetime
-from general import *
-from amqp import *
+from cappylib.general import *
+from cappylib.amqp import *
 
 ##############################################################################################
 # GLOBAL VARS 
@@ -137,19 +124,21 @@ class Log:
 # TESTING #
 ##############################################################################################
 
+def main():
+
+    # log test
+    amqpTestConfig = {
+        'username': 'guest',
+        'password': 'guest',
+        'host': 'localhost',
+        'port': 5672,
+        'virtual_host': '/'
+        }
+    log = Log('test', logAmqp=amqpTestConfig, logFile=[(Log.levels.DEBUG, 'test.log')])
+    print 'Log...', log.logEvent(Log.levels.DEBUG, 'test log event')
+
 if __name__ == '__main__':
 
     try:
-
-        # log test
-        amqpTestConfig = {
-            'username': 'guest',
-            'password': 'guest',
-            'host': 'localhost',
-            'port': 5672,
-            'virtual_host': '/'
-            }
-        log = Log('test', logAmqp=amqpTestConfig, logFile=[(Log.levels.DEBUG, 'test.log')])
-        print 'Log...', log.logEvent(Log.levels.DEBUG, 'test log event')
-
+        main()
     except error as e: print e.error

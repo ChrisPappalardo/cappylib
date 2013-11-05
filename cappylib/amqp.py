@@ -34,7 +34,7 @@
 ##############################################################################################
 
 import pika, logging
-from general import *
+from cappylib.general import *
 
 ##############################################################################################
 # GLOBAL VARS 
@@ -283,23 +283,25 @@ def amqpPublish(amqp, ex, key='', message=''):
 # TESTING
 ##############################################################################################
 
+def main():
+
+    # amqp test
+    amqp = {'username':'guest', 'password':'guest', 'host':'localhost', 'port':5672, 
+            'virtual_host':'/'}
+    ex = {'exchange':'testEx', 'exchange_type':'direct', 'passive':False, 'durable':False,
+          'auto_delete':False, 'nowait':False}
+    q = {'queue':'testQ', 'passive':False, 'durable':False, 'exclusive':False, 
+         'auto_delete':False, 'nowait':False}
+    a = Amqp(amqp)
+    a.consume(exchange=ex, queue=q, key=q['queue'])  # creates exchange and queue
+    a.publish(exchange=ex, message='test', key=q['queue'])
+    status = a.qStatus(qName=q['queue'])
+    message = Amqp(amqp).consume(exchange=ex, queue=q, key=q['queue'])
+    print aColor('BLUE') + 'Amqp.publish/qStatus/consume...', aColor('OFF'), message, status
+    print aColor('BLUE') + 'Amqp.qStatus...', aColor('OFF'), a.qStatus(qName='blahblah')
+
 if __name__ == '__main__':
 
     try:
-
-        # amqp test
-        amqp = {'username':'guest', 'password':'guest', 'host':'localhost', 'port':5672, 
-                'virtual_host':'/'}
-        ex = {'exchange':'testEx', 'exchange_type':'direct', 'passive':False, 'durable':False,
-              'auto_delete':False, 'nowait':False}
-        q = {'queue':'testQ', 'passive':False, 'durable':False, 'exclusive':False, 
-             'auto_delete':False, 'nowait':False}
-        a = Amqp(amqp)
-        a.consume(exchange=ex, queue=q, key=q['queue'])  # creates exchange and queue
-        a.publish(exchange=ex, message='test', key=q['queue'])
-        status = a.qStatus(qName=q['queue'])
-        message = Amqp(amqp).consume(exchange=ex, queue=q, key=q['queue'])
-        print aColor('BLUE') + 'Amqp.publish/qStatus/consume...', aColor('OFF'), message, status
-        print aColor('BLUE') + 'Amqp.qStatus...', aColor('OFF'), a.qStatus(qName='blahblah')
-
+        main()
     except error as e: print e.error

@@ -142,23 +142,25 @@ def argParse(keyMap=None, keySearch=None, valueSearch=None):
 # TESTING
 ##############################################################################################
 
+def main():
+
+    # argParse test
+    print 'argParse()... ', argParse()
+    print 'argParse(keyMap=[one, two, three])... ', argParse(keyMap=['one','two','three'])
+    print 'argParse(keyMap=[one, two, three],keySearch=one)... ', \
+        argParse(keyMap=["one","two","three"], keySearch='one')
+    print 'argParse(valueSearch="2")... ', argParse(valueSearch='2')
+        
+    # error test
+    try:
+        raise error('test', 'error', 'fi', 'fo', 'fum')
+    except error as e: print 'error... ', e.error
+
+    # color test
+    print 'aColor... ' + aColor('BOLD;B;I;GREEN') + '1' + aColor('OFF')
+
 if __name__ == '__main__':
 
     try:
-
-        # argParse test
-        print 'argParse()... ', argParse()
-        print 'argParse(keyMap=[one, two, three])... ', argParse(keyMap=['one','two','three'])
-        print 'argParse(keyMap=[one, two, three],keySearch=one)... ', \
-               argParse(keyMap=["one","two","three"], keySearch='one')
-        print 'argParse(valueSearch="2")... ', argParse(valueSearch='2')
-        
-        # error test
-        try:
-            raise error('test', 'error', 'fi', 'fo', 'fum')
-        except error as e: print 'error... ', e.error
-
-        # color test
-        print 'aColor... ' + aColor('BOLD;B;I;GREEN') + '1' + aColor('OFF')
-
+        main()
     except error as e: print e.error
