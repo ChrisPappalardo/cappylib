@@ -63,45 +63,59 @@ third-party modules, as follows:
 ## Documentation
 
 I included docstrings with all cappylib classes, methods, and functions.  I also included 
-unit tests for all classes, methods, and functions in each respective module.
+unit tests for all classes, methods, and functions as main() in each respective module.
 
-To review docstring-based documentation, use Python in calculator mode, as follows:
-
-  $ python
-  Python 2.7.3 (default, Jan  2 2013, 13:56:14)
-  [GCC 4.7.2] on linux2
-  Type "help", "copyright", "credits" or "license" for more information.
-  >>> import cappylib
-  >>> help(cappylib)
-
-## Usage and Examples
-
-To use cappylib, simply import the library into your python scripts:
+To review docstring-based documentation, use Python in calculator mode, and execute the following:
 
 ```python
 import cappylib
+help(cappylib)
 ```
 
-Or you can import a specific module in the library:
+for a list of modules contained in cappylib.  Execute the following:
 
 ```python
-import cappylib.amqp
+import cappylib.<module>
+help(cappylib.<module>)
 ```
 
-The library modules are as follows:
+for docstrings associated with <module>.
 
-  * amqp.py
-  * date_time.py
-  * db.py
-  * general.py
-  * log.py
-  * prontab.py
+## Usage and Examples
+
+To import all cappylib modules directly into your scripts symbol table, use:
+
+```python
+from cappylib import *
+```
+
+(You can replace * with <module>)
+
+Or you can import a specific module into the cappylib namespace using:
+
+```python
+import cappylib.<module>
+```
+
+Available modules are as follows:
+
+  * amqp
+  * date_time
+  * db
+  * general
+  * log
+  * prontab
 
 To see examples of class instantiation and class method and function usage, simply review the 
 unit testing code at the end of each module .py file under the "TESTING" header.  
-Module files can be found in your default package installation directory 
-(/usr/local/lib/python2.7/dist-packages on my system).  
+Module files can be found in the cappylib dir in your default package installation directory 
+(/usr/local/lib/python2.7/dist-packages/cappylib on my system).  Unit testing code is 
+contained in the function main() in each module.
 
 You can run the unit tests yourself using:
 
     $ python -m cappylib.<module>
+
+Or all unit tests using:
+   
+    $ python -m cappylib
