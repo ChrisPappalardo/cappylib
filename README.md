@@ -33,32 +33,26 @@ third-party modules, as follows:
 
 1.  Follow the installation instructions for mysql-connector-python for your particular 
     platform as outlined at 
-    http://dev.mysql.com/doc/connector-python/en/connector-python-installation.html.  For 
-    example, on my Debian Linux server, I opted to downloaded the platform-independent source 
-    code and ran "python setup.py install" as root from the extracted tarball.  This required 
-    that I had Python setuptools installed beforehand ("apt-get install python-setuptools" as 
-    root on my Debian system).
+    http://dev.mysql.com/doc/connector-python/en/connector-python-installation.html.
 
 2.  Follow the installation instructions for pika as outlined in the documentation linked 
-    in the README.md file at https://github.com/pika/pika/.  As an alternative to using pip 
-    or easy_install, you can clone the repo from github and then run 
-    "python setup.py install" as root.
+    in the README.md file at https://github.com/pika/pika/.
 
-3.  Install cappylib, which is available from PyPl, using easy_install:
+3.  Install cappylib, which is available from PyPl, using easy_install (from a *nix shell):
 
-      $ easy_install cappylib
+    $ easy_install cappylib
 
     or pip:
 
-      $ pip install cappylib
+    $ pip install cappylib
 
     You can also clone the repo from github:
 
-      $ git clone https://github.com/ChrisPappalardo/cappylib.git
+    $ git clone https://github.com/ChrisPappalardo/cappylib.git
 
     and from the source dir run the following as root:
 
-      $ python setup.py install
+    $ python setup.py install
 
 ## Documentation
 
@@ -114,8 +108,8 @@ contained in the function main() in each module.
 
 You can run the unit tests yourself using:
 
-    $ python -m cappylib.\<module\>
+    $ python -m cappylib.<module>
 
 Or all unit tests using:
-   
-    $ python -m cappylib
+
+   $ python -m cappylib
