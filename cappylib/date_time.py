@@ -80,35 +80,75 @@ class holiday(object):
     """a class with static elements for defining and checking special dates and times"""
 
     none = 0
-    weekday = 1
-    w_us_time_nyse = 2
-    h_all_weekend = 4
-    h_us_time_nyseam = 8
-    h_us_time_nysepm = 16
-    h_us_newyearsday = 32
-    h_us_mlkday = 64
-    h_us_presidentsday = 128
-    h_us_goodfriday = 256
-    h_us_memorialday = 512
-    h_us_independenceday = 1024
-    h_us_laborday = 2048
-    h_us_columbusday = 4096
-    h_us_veteransday = 8192
-    h_us_thanksgiving = 16384
-    h_us_christmas = 32768
+    h_us_nyse_amclosed = 1
+    h_us_nyse_pmclosed = 2
+    h_us_weekend = 4
+    h_us_newyearsday = 8
+    h_us_mlkday = 16
+    h_us_presidentsday = 32
+    h_us_goodfriday_halfday = 64
+    h_us_eastersunday = 128
+    h_us_memorialday = 256
+    h_us_independenceday = 512
+    h_us_laborday = 1024
+    h_us_columbusday = 2048
+    h_us_veteransday = 4096
+    h_us_thanksgiving = 8192
+    h_us_christmas = 16384
+    h_us_all = reduce(lambda x, y: x | y, [1 << x for x in range(1, 16)])
+#65536
+#131072
+#262144
+#524288
+#1048576
+#2097152
+#4194304
+#8388608
+#16777216
+#33554432
+#67108864
+#134217728
+#268435456
+#536870912
+#1073741824
+#2147483648
 
     @staticmethod
-    def check(holiday, _dt):
-        """static method to check if holiday resolves to datetime _dt"""
+    def check(_dt, h):
+        """static method to check if holiday h resolves to datetime _dt"""
 
-        return True
+        # Before the NYSE opening bell
+        if h & holiday.h_us_nyse_amclosed and _dt.time() < dt.time(9, 30): return True
+
+        # On or after the NYSE closing bell
+        if h & holiday.h_us_nyse_pmclosed and _dt.time() >= dt.time(16, 0): return True
+
+        # Good Friday: the Friday before Easter Sunday is a half-day on the US:NYSE
+        if h & (holiday.h_us_goodfriday_halfday | holiday.h_us_eastersunday):
+            year = _dt.year
+            a = year % 19 # % is modulo operator, like division but returns remainder
+            b = year // 100
+            c = year % 100
+            d = (19 * a + b - b // 4 - ((b - (b + 8) // 25 + 1) // 3) + 15) % 30
+            e = (32 + 2 * (b % 4) + 2 * (c // 4) - d - (c % 4)) % 7
+            f = d + e - 7 * ((a + 11 * d + 22 * e) // 451) + 114
+            month = f // 31
+            day = f % 31 + 1
+        if h & holiday.h_us_eastersunday:
+            return dt.date(_dt) == dt.datetime.date(dt.datetime(year, month, day))
+        elif h & holiday.h_us_goodfriday_halfday:
+            d = previousWeekday(dt.datetime(year, month, day), enum.weekdays.FRIDAY)
+            return _dt >= dt.datetime(d.year, d.month, d.day, 13, 00, 00)
 
     def __init__(self):
         pass
 
-# dateCheck - returns true if datetime _dt is in allow list or not in deny list, false otherwise
+# dateCheck - returns true if datetime _dt is in allow list or not in deny list, else false
 def dateCheck(_dt, allow=None, deny=None):
     """returns true if datetime _dt is in allow list or not in deny list, false otherwise"""
+
+    allow = [] if allow == None else allow
+    deny = [] if allow == None else deny
 
     for allowed in [allow] if type(allow) != list else allow:
         if holiday.check(_dt, allowed): return True
@@ -148,15 +188,17 @@ def calcTimeseries(count, days=0, mins=0, secs=0, dateStart=datetime.datetime.ut
 def main():
 
     # date function tests
-    d_t = datetime.datetime
     print aColor('BLUE') + 'calcTimeseries(count=10, mins=5, dateStart=now())...', \
-        aColor('OFF'), calcTimeseries(10, mins=5, dateStart=d_t.now())
+        aColor('OFF'), calcTimeseries(10, mins=5, dateStart=dt.datetime.now())
     print aColor('BLUE') + 'nthWeekday(year=2012, month=1, nth=3, weekday=MONDAY)...', \
         aColor('OFF'), nthWeekday(2012, 1, 3, enum.weekdays.MONDAY)
     print aColor('BLUE') + 'previousWeekday(date=5/31/12, weekday=MONDAY)...', \
-        aColor('OFF'), previousWeekday(d_t(2012, 5, 31), enum.weekdays.MONDAY)
+        aColor('OFF'), previousWeekday(dt.datetime(2012, 5, 31), enum.weekdays.MONDAY)
+    h = holiday.h_us_nyse_amclosed|holiday.h_us_nyse_pmclosed|holiday.h_us_goodfriday_halfday
     print aColor('BLUE') + 'dateCheck(_dt=3/29/13 10:00:00, deny=goodfriday)...', \
-        aColor('OFF'), dateCheck(dt.datetime(2013, 3, 29, 10, 0), holiday.h_us_goodfriday)
+        aColor('OFF'), dateCheck(dt.datetime(2013,3,29,10,0), deny=h)
+    print aColor('BLUE') + 'dateCheck(_dt=3/29/13 1:01:00, deny=goodfriday)...', \
+        aColor('OFF'), dateCheck(dt.datetime(2013,3,29,13,1), deny=h)
 
 if __name__ == '__main__':
 
