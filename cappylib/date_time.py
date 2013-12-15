@@ -117,13 +117,37 @@ class holiday(object):
     def check(_dt, h):
         """static method to check if holiday h resolves to datetime _dt"""
 
+        result = False  # default result is False
+        dow = enum.weekdays
+
         # Before the NYSE opening bell
-        if h & holiday.h_us_nyse_amclosed and _dt.time() < dt.time(9, 30): return True
+        if h & holiday.h_us_nyse_amclosed:
+            result = result | (_dt.time() < dt.time(9, 30))
 
         # On or after the NYSE closing bell
-        if h & holiday.h_us_nyse_pmclosed and _dt.time() >= dt.time(16, 0): return True
+        if h & holiday.h_us_nyse_pmclosed:
+            result = result | (_dt.time() >= dt.time(16, 0))
 
-        # Good Friday: the Friday before Easter Sunday is a half-day on the US:NYSE
+        # Weekends
+        if h & holiday.h_us_weekend:
+            result = result | (_dt.weekday() in (dow.SATURDAY, dow.SUNDAY))
+
+        # New Year's Day:  Fri Dec 31, Jan 1, and Mon Jan 2
+        if h & holiday.h_us_newyearsday:
+            nyDec31 = _dt.month == 12 and _dt.day == 31 and _dt.weekday() == dow.FRIDAY
+            nyJan1 = _dt.month == 1 and _dt.day == 1
+            nyJan2 = _dt.month == 1 and _dt.day == 2 and _dt.weekday() == dow.MONDAY
+            result = result | (nyDec31 or nyJan1 or nyJan2)
+
+        # Martin Luther King Day:  3rd Mon in Jan
+        if h & holiday.h_us_mlkday:
+            result = result | (_dt.date() == nthWeekday(_dt.year, 1, 3, dow.MONDAY).date())
+
+        # Presidents' Day:  3rd Mon in Feb
+        if h & holiday.h_us_presidentsday:
+            result = result | (_dt.date() == nthWeekday(_dt.year, 2, 3, dow.MONDAY).date())
+
+        # Good Friday:  the Fri before Easter Sun is a half-day on the US:NYSE
         if h & (holiday.h_us_goodfriday_halfday | holiday.h_us_eastersunday):
             year = _dt.year
             a = year % 19 # % is modulo operator, like division but returns remainder
@@ -134,11 +158,42 @@ class holiday(object):
             f = d + e - 7 * ((a + 11 * d + 22 * e) // 451) + 114
             month = f // 31
             day = f % 31 + 1
-        if h & holiday.h_us_eastersunday:
-            return dt.date(_dt) == dt.datetime.date(dt.datetime(year, month, day))
-        elif h & holiday.h_us_goodfriday_halfday:
-            d = previousWeekday(dt.datetime(year, month, day), enum.weekdays.FRIDAY)
-            return _dt >= dt.datetime(d.year, d.month, d.day, 13, 00, 00)
+            if h & holiday.h_us_eastersunday:
+                result = result | (_dt.date() == dt.datetime(year, month, day).date())
+            elif h & holiday.h_us_goodfriday_halfday:
+                d = previousWeekday(dt.datetime(year, month, day), dow.FRIDAY)
+                result = result | (_dt.date() == d.date() and _dt.time() >= dt.time(13, 00))
+
+        # Memorial Day:  last Mon in May
+        if h & holiday.h_us_memorialday:
+            result = result | (_dt.date() == previousWeekday(dt.datetime(_dt.year,5,31),
+                                                             dow.MONDAY).date())
+
+        # Independence Day:  Jul 4
+        if h & holiday.h_us_independenceday:
+            result = result | (_dt.month == 7 and _dt.day == 4)
+
+        # Labor Day:  1st Mon of Sep
+        if h & holiday.h_us_laborday:
+            result = result | (_dt.date() == nthWeekday(_dt.year, 9, 1, dow.MONDAY).date())
+
+        # Columbus Day:  2nd Mon of Oct
+        if h & holiday.h_us_columbusday:
+            result = result | (_dt.date() == nthWeekday(_dt.year, 10, 2, dow.MONDAY).date())
+
+        # Veterans' Day:  Nov 11
+        if h & holiday.h_us_veteransday:
+            result = result | (_dt.month == 11 and _dt.day == 11)
+
+        # Thanksgiving Day:  4th Thu of Nov
+        if h & holiday.h_us_thanksgiving:
+            result = result | (_dt.date() == nthWeekday(_dt.year, 11, 4, dow.THURSDAY).date())
+
+        # Christmas Day:  Dec 25
+        if h & holiday.h_us_christmas:
+            result = result | (_dt.month == 12 and _dt.day == 25)
+
+        return result
 
     def __init__(self):
         pass
@@ -148,7 +203,7 @@ def dateCheck(_dt, allow=None, deny=None):
     """returns true if datetime _dt is in allow list or not in deny list, false otherwise"""
 
     allow = [] if allow == None else allow
-    deny = [] if allow == None else deny
+    deny = [] if deny == None else deny
 
     for allowed in [allow] if type(allow) != list else allow:
         if holiday.check(_dt, allowed): return True
@@ -194,11 +249,29 @@ def main():
         aColor('OFF'), nthWeekday(2012, 1, 3, enum.weekdays.MONDAY)
     print aColor('BLUE') + 'previousWeekday(date=5/31/12, weekday=MONDAY)...', \
         aColor('OFF'), previousWeekday(dt.datetime(2012, 5, 31), enum.weekdays.MONDAY)
-    h = holiday.h_us_nyse_amclosed|holiday.h_us_nyse_pmclosed|holiday.h_us_goodfriday_halfday
-    print aColor('BLUE') + 'dateCheck(_dt=3/29/13 10:00:00, deny=goodfriday)...', \
-        aColor('OFF'), dateCheck(dt.datetime(2013,3,29,10,0), deny=h)
-    print aColor('BLUE') + 'dateCheck(_dt=3/29/13 1:01:00, deny=goodfriday)...', \
-        aColor('OFF'), dateCheck(dt.datetime(2013,3,29,13,1), deny=h)
+    h = {'nyse_amclosed': (holiday.h_us_nyse_amclosed, dt.datetime(2013,12,16,9,29)),
+         'nyse_pmclosed': (holiday.h_us_nyse_pmclosed, dt.datetime(2013,12,16,16,00)),
+         'weekend': (holiday.h_us_weekend, dt.datetime(2013,12,15)),
+         'newyearsday': (holiday.h_us_newyearsday, dt.datetime(2012,1,2)),
+         'mlkday': (holiday.h_us_mlkday, dt.datetime(2014,1,20)),
+         'presidentsday': (holiday.h_us_presidentsday, dt.datetime(2014,2,17)),
+         'goodfriday_halfday': (holiday.h_us_goodfriday_halfday, dt.datetime(2013,3,29,13,1)),
+         'memorialday': (holiday.h_us_memorialday, dt.datetime(2013,5,27)),
+         'independenceday': (holiday.h_us_independenceday, dt.datetime(2013,7,4)),
+         'laborday': (holiday.h_us_laborday, dt.datetime(2013,9,2)),
+         'columbusday': (holiday.h_us_columbusday, dt.datetime(2013,10,14)),
+         'veteransday': (holiday.h_us_veteransday, dt.datetime(2013,11,11)),
+         'thanksgiving': (holiday.h_us_thanksgiving, dt.datetime(2013,11,28)),
+         'christmas': (holiday.h_us_christmas, dt.datetime(2013,12,25)),
+         'us_all': (holiday.h_us_all, dt.datetime(2013,12,25))}
+    for k in h.keys():
+        print aColor('BLUE') + 'holiday.check({0}, {1})...'.format(k,h[k][1]), \
+            aColor('OFF'), holiday.check(h[k][1], h[k][0])
+    h = [holiday.h_us_nyse_amclosed, holiday.h_us_nyse_pmclosed, holiday.h_us_christmas]
+    print aColor('BLUE') + 'dateCheck(12/24/13-12:00,deny=[amclosed,pmclosed,christmas])...', \
+        aColor('OFF'), dateCheck(dt.datetime(2013,12,24,12,0), deny=h)
+    print aColor('BLUE') + 'dateCheck(12/24/13-12:00,allow=[amclosed,pmclosed,christmas])...',\
+        aColor('OFF'), dateCheck(dt.datetime(2013,12,24,12,0), allow=h)
 
 if __name__ == '__main__':
 
