@@ -205,9 +205,9 @@ def dateCheck(_dt, allow=None, deny=None):
     allow = [] if allow == None else allow
     deny = [] if deny == None else deny
 
-    for allowed in [allow] if type(allow) != list else allow:
+    for allowed in ([allow] if type(allow) != list else allow):
         if holiday.check(_dt, allowed): return True
-    for denied in [deny] if type(deny) != list else deny:
+    for denied in ([deny] if type(deny) != list else deny):
         if holiday.check(_dt, denied): return False
     return True
 
@@ -249,29 +249,31 @@ def main():
         aColor('OFF'), nthWeekday(2012, 1, 3, enum.weekdays.MONDAY)
     print aColor('BLUE') + 'previousWeekday(date=5/31/12, weekday=MONDAY)...', \
         aColor('OFF'), previousWeekday(dt.datetime(2012, 5, 31), enum.weekdays.MONDAY)
-    h = {'nyse_amclosed': (holiday.h_us_nyse_amclosed, dt.datetime(2013,12,16,9,29)),
-         'nyse_pmclosed': (holiday.h_us_nyse_pmclosed, dt.datetime(2013,12,16,16,00)),
-         'weekend': (holiday.h_us_weekend, dt.datetime(2013,12,15)),
-         'newyearsday': (holiday.h_us_newyearsday, dt.datetime(2012,1,2)),
-         'mlkday': (holiday.h_us_mlkday, dt.datetime(2014,1,20)),
-         'presidentsday': (holiday.h_us_presidentsday, dt.datetime(2014,2,17)),
-         'goodfriday_halfday': (holiday.h_us_goodfriday_halfday, dt.datetime(2013,3,29,13,1)),
-         'memorialday': (holiday.h_us_memorialday, dt.datetime(2013,5,27)),
-         'independenceday': (holiday.h_us_independenceday, dt.datetime(2013,7,4)),
-         'laborday': (holiday.h_us_laborday, dt.datetime(2013,9,2)),
-         'columbusday': (holiday.h_us_columbusday, dt.datetime(2013,10,14)),
-         'veteransday': (holiday.h_us_veteransday, dt.datetime(2013,11,11)),
-         'thanksgiving': (holiday.h_us_thanksgiving, dt.datetime(2013,11,28)),
-         'christmas': (holiday.h_us_christmas, dt.datetime(2013,12,25)),
-         'us_all': (holiday.h_us_all, dt.datetime(2013,12,25))}
+    h = {'nyse_amclosed': (dt.datetime(2013,12,16,9,29), holiday.h_us_nyse_amclosed), 
+         'nyse_pmclosed': (dt.datetime(2013,12,16,16,00), holiday.h_us_nyse_pmclosed),
+         'weekend': (dt.datetime(2013,12,15), holiday.h_us_weekend), 
+         'newyearsday': (dt.datetime(2012,1,2), holiday.h_us_newyearsday), 
+         'mlkday': (dt.datetime(2014,1,20), holiday.h_us_mlkday), 
+         'presidentsday': (dt.datetime(2014,2,17), holiday.h_us_presidentsday), 
+         'goodfriday_halfday': (dt.datetime(2013,3,29,13,1), holiday.h_us_goodfriday_halfday), 
+         'memorialday': (dt.datetime(2013,5,27), holiday.h_us_memorialday), 
+         'independenceday': (dt.datetime(2013,7,4), holiday.h_us_independenceday), 
+         'laborday': (dt.datetime(2013,9,2), holiday.h_us_laborday), 
+         'columbusday': (dt.datetime(2013,10,14), holiday.h_us_columbusday), 
+         'veteransday': (dt.datetime(2013,11,11), holiday.h_us_veteransday), 
+         'thanksgiving': (dt.datetime(2013,11,28), holiday.h_us_thanksgiving), 
+         'christmas': (dt.datetime(2013,12,25), holiday.h_us_christmas), 
+         'us_all': (dt.datetime(2013,12,25), holiday.h_us_all)}
     for k in h.keys():
-        print aColor('BLUE') + 'holiday.check({0}, {1})...'.format(k,h[k][1]), \
-            aColor('OFF'), holiday.check(h[k][1], h[k][0])
+        print aColor('BLUE') + 'holiday.check({0}, {1})...'.format(h[k][0], k), \
+            aColor('OFF'), holiday.check(h[k][0], h[k][1])
     h = [holiday.h_us_nyse_amclosed, holiday.h_us_nyse_pmclosed, holiday.h_us_christmas]
     print aColor('BLUE') + 'dateCheck(12/24/13-12:00,deny=[amclosed,pmclosed,christmas])...', \
         aColor('OFF'), dateCheck(dt.datetime(2013,12,24,12,0), deny=h)
-    print aColor('BLUE') + 'dateCheck(12/24/13-12:00,allow=[amclosed,pmclosed,christmas])...',\
-        aColor('OFF'), dateCheck(dt.datetime(2013,12,24,12,0), allow=h)
+    print aColor('BLUE') + 'dateCheck(12/25/13-12:00,allow=[amclosed,pmclosed,christmas])...',\
+        aColor('OFF'), dateCheck(dt.datetime(2013,12,25,12,0), allow=h)
+    print aColor('BLUE') + 'dateCheck(12/25/13-12:00,deny=[amclosed,pmclosed,christmas])...',\
+        aColor('OFF'), dateCheck(dt.datetime(2013,12,25,12,0), deny=h)
 
 if __name__ == '__main__':
 
