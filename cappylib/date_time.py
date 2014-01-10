@@ -95,7 +95,8 @@ class holiday(object):
     h_us_veteransday = 4096
     h_us_thanksgiving = 8192
     h_us_christmas = 16384
-    h_us_all = reduce(lambda x, y: x | y, [1 << x for x in range(1, 16)])
+    h_us_all = reduce(lambda x, y: x | y, [1 << x for x in range(0, 15)])
+#32768
 #65536
 #131072
 #262144
