@@ -215,10 +215,11 @@ def dateCheck(_dt, allow=None, deny=None):
 # calcTimeseries - calculates a time series based on inputs
 def calcTimeseries(count, days=0, mins=0, secs=0, dateStart=datetime.datetime.utcnow(),
                    dateEnd=datetime.datetime(1970, 1, 1), dateCheck=lambda *x, **y: True, 
-                   criteria=None):
+                   args=None):
     """calculates a time series for an interval, count, and start/stop dates;
-       optionally checks generated dates against a passed dateCheck function"""
+       optionally checks generated dates against a passed dateCheck function(dt, **args)"""
 
+    args = dict() if args == None else args
     result = list()
     interval = datetime.timedelta(days=days, minutes=mins, seconds=secs)
 
@@ -226,7 +227,7 @@ def calcTimeseries(count, days=0, mins=0, secs=0, dateStart=datetime.datetime.ut
     while len(result) < count:
         
         # add date if dateCheck returns True
-        if dateCheck(datetime=dateStart, criteria=criteria):
+        if dateCheck(dateStart, **args):
             result.append(dateStart.strftime("%Y-%m-%d %H:%M:%S"))
             
         # if dateEnd is reached, break
