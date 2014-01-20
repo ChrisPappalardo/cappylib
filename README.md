@@ -12,6 +12,7 @@ This package includes:
   * Levels-based logger to queue, file, and/or stdout
   * Date and time series generator
   * Command-line argument parser
+  * Cubic-spline interpolator
 
 MySQL and MySQL Connector/Python are Copyright (C) Oracle and/or its affiliates and are 
 licensed under the GNU GPLv2 (with FOSS License Exception).  Visit 
@@ -96,6 +97,7 @@ Available modules are as follows:
   * amqp
   * date_time
   * db
+  * financial
   * general
   * log
   * prontab
