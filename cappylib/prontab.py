@@ -29,6 +29,7 @@
 
 import datetime, os, time
 from cappylib.general import *
+from cappylib.log import Log
 #import sys, re, mysql.connector, socket, os, pika, logging, ast, time
 #from mysql.connector import errorcode
 #from datetime import datetime, timedelta
@@ -74,7 +75,7 @@ class ProntabEvent(object):
             return obj
 
     def __init__(self, action, minute=ProntabSet(), hour=ProntabSet(), day=ProntabSet(), 
-                 month=ProntabSet(), dow=ProntabSet(), args=(), kwargs={}):
+                 month=ProntabSet(), dow=ProntabSet(), log=None, args=(), kwargs={}):
         """create events from time args; time args can be numbers, sets of numbers, or 
            '*/n' where n is time interval count for arbitrary time units"""
 
@@ -83,6 +84,7 @@ class ProntabEvent(object):
         self.day = ProntabEvent.toSet(ProntabEvent.parseStr(day, range(1, 31)))
         self.month = ProntabEvent.toSet(ProntabEvent.parseStr(month, range(1, 12)))
         self.dow = ProntabEvent.toSet(ProntabEvent.parseStr(dow, range(0, 6)))
+        self.log = log
         self.action = action
         self.args = args
         self.kwargs = kwargs
@@ -118,10 +120,11 @@ class Prontab(object):
 
                 # if current time meets event criteria and event isnt running
                 if e.checkTime(datetime.datetime.now().timetuple()) and not e.pid:
-                    # flush stdout/err, fork process, and have child call action with args
+                    # flush stdout/err and fork process
                     sys.stdout.flush()
                     sys.stderr.flush()
                     e.pid = os.fork()
+                    # child calls action with args and reports errors via stderr
                     if not e.pid:
                         try:
                             e.action(*e.args, **e.kwargs)
@@ -129,7 +132,9 @@ class Prontab(object):
                         except error as err:
                             sys.stderr.write(err.error + os.linesep)
                             exit(1)
-                            
+                    # parent captures start time
+                    else: e.__dt__ = datetime.datetime.utcnow()
+
                 # update child pids, reset any finished/terminated to 0
                 (pid, status) = os.waitpid(e.pid, os.WNOHANG | os.WUNTRACED)
                 if pid > 0:
@@ -138,6 +143,10 @@ class Prontab(object):
                     if status != 0: 
                         err = 'child (pid={0}) exited with status {1}'
                         raise error('Prontab', 'error', err.format(pid, status))
+                    # otherwise, if a log object was passed to the constructor, log event
+                    elif e.log and isinstance(e.log, Log):
+                        m = [e.action.__name__, (datetime.datetime.utcnow()-e.__dt__).seconds]
+                        e.log.logEvent(Log.levels.INFO, '{} completed in {}s'.format(*m))
 
             time.sleep(1)
 
@@ -149,12 +158,13 @@ def main():
 
     # prontab test
     def prontabTask(i, *args):
-        if i == 3: raise error(*args)
+        if i: raise error('prontab', 'unit test -', 'test error')
     print 'prontab.run()...'
     try:
-        p = Prontab(ProntabEvent(prontabTask, args=[1]),
-                    ProntabEvent(prontabTask, args=[2]),
-                    ProntabEvent(prontabTask, args=[3, 'test','term - ','prontab finished 3 tasks']))
+        log = Log('test', logStdout=Log.levels.INFO)
+        p = Prontab(ProntabEvent(prontabTask, args=[0], log=log),
+                    ProntabEvent(prontabTask, args=[0], log=log),
+                    ProntabEvent(prontabTask, args=[1], log=log))
         p.run()
     except error as e: print ' ...Done(', e.error, ')'
 
