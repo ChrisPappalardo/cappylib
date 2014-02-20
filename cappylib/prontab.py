@@ -143,10 +143,11 @@ class Prontab(object):
                     if status != 0: 
                         err = 'child (pid={0}) exited with status {1}'
                         raise error('Prontab', 'error', err.format(pid, status))
-                    # otherwise, if a log object was passed to the constructor, log event
+                    # otherwise, if a log object was passed to the constructor, log action
                     elif e.log and isinstance(e.log, Log):
-                        m = [e.action.__name__, (datetime.datetime.utcnow()-e.__dt__).seconds]
-                        e.log.logEvent(Log.levels.INFO, '{} completed in {}s'.format(*m))
+                        t = (datetime.datetime.utcnow() - e.__dt__)
+                        m = [e.action.__name__, t.seconds + t.microseconds / 1000000.0]
+                        e.log.logEvent(Log.levels.INFO, '{} completed in {} secs'.format(*m))
 
             time.sleep(1)
 
