@@ -27,12 +27,9 @@
 # IMPORTS 
 ##############################################################################################
 
-import datetime, os, time
+import datetime, sys, os, time
 from cappylib.general import *
 from cappylib.log import Log
-#import sys, re, mysql.connector, socket, os, pika, logging, ast, time
-#from mysql.connector import errorcode
-#from datetime import datetime, timedelta
 
 ##############################################################################################
 # GLOBAL VARS 
@@ -69,7 +66,7 @@ class ProntabEvent(object):
         # if obj is a string and meets the parse criteria, convert to a set
         if isinstance(obj, str) and re.search('^\*\/(\d{1,})$', obj):
             n = re.search('^\*\/(\d{1,})$', obj).group(1)
-            return set([i for i in t if i%n == 0])
+            return set([i for i in t if i%int(n) == 0])
         # otherwise, pass s through
         else:
             return obj
@@ -128,15 +125,15 @@ class Prontab(object):
                     if not e.pid:
                         try:
                             e.action(*e.args, **e.kwargs)
-                            exit(0)
+                            sys.exit(0)
                         except error as err:
                             sys.stderr.write(err.error + os.linesep)
-                            exit(1)
+                            sys.exit(1)
                     # parent captures start time
                     else: e.__dt__ = datetime.datetime.utcnow()
 
                 # update child pids, reset any finished/terminated to 0
-                (pid, status) = os.waitpid(e.pid, os.WNOHANG | os.WUNTRACED)
+                (pid, status) = os.waitpid(e.pid, os.WNOHANG|os.WUNTRACED) if e.pid else (0,0)
                 if pid > 0:
                     e.pid = 0
                     # if child did not exit cleanly, throw an error
@@ -165,7 +162,7 @@ def main():
         log = Log('test', logStdout=Log.levels.INFO)
         p = Prontab(ProntabEvent(prontabTask, args=[0], log=log),
                     ProntabEvent(prontabTask, args=[0], log=log),
-                    ProntabEvent(prontabTask, args=[1], log=log))
+                    ProntabEvent(prontabTask, minute=r'*/2', args=[1], log=log))
         p.run()
     except error as e: print ' ...Done(', e.error, ')'
 
