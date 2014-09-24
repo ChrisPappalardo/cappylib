@@ -52,11 +52,7 @@ class ProntabEvent(object):
     def toSet(obj):
         """static Prontab method to convert arg to set"""
 
-        if isinstance(obj, (int, long)):
-            return set([obj]) # single item
-        if not isinstance(obj, set):
-            return set(obj) # force to set
-        return obj
+        return set([obj]) if not isinstance(obj, set) else obj
 
     @staticmethod
     def parseStr(obj, t):
@@ -68,14 +64,15 @@ class ProntabEvent(object):
             n = re.search('^\*\/(\d{1,})$', obj).group(1)
             return set([i for i in t if i%int(n) == 0])
         # otherwise, pass s through
-        else:
-            return obj
+        return obj
 
-    def __init__(self, action, minute=ProntabSet(), hour=ProntabSet(), day=ProntabSet(), 
-                 month=ProntabSet(), dow=ProntabSet(), log=None, args=(), kwargs={}):
+    def __init__(self, action, second=ProntabSet(), minute=ProntabSet(), hour=ProntabSet(),
+                 day=ProntabSet(), month=ProntabSet(), dow=ProntabSet(), log=None, args=(),
+                 kwargs={}):
         """create events from time args; time args can be numbers, sets of numbers, or 
            '*/n' where n is time interval count for arbitrary time units"""
 
+        self.second = ProntabEvent.toSet(ProntabEvent.parseStr(second, range(0, 59)))
         self.minute = ProntabEvent.toSet(ProntabEvent.parseStr(minute, range(0, 59)))
         self.hour = ProntabEvent.toSet(ProntabEvent.parseStr(hour, range(0, 23)))
         self.day = ProntabEvent.toSet(ProntabEvent.parseStr(day, range(1, 31)))
@@ -89,7 +86,8 @@ class ProntabEvent(object):
     def checkTime(self, t):
         """Returns True if timetuple t meets internal schedule criteria"""
 
-        return ((t.tm_min     in self.minute) and
+        return ((t.tm_sec     in self.second) and
+                (t.tm_min     in self.minute) and
                 (t.tm_hour    in self.hour) and
                 (t.tm_mday    in self.day) and
                 (t.tm_mon     in self.month) and
@@ -102,8 +100,9 @@ class Prontab(object):
     def __init__(self, *events):
         """init with one or more ProntabEvent objects"""
 
-        self.events = events
-        for e in self.events: e.pid = 0  # store child pid in event object
+        self.events = list(events)
+        # create child pid property in event object(s)
+        for i in range(len(self.events)): self.events[i].pid = 0
 
     def run(self):
         """cycles through all events every second; if checkTime(), forks and calls
@@ -113,8 +112,10 @@ class Prontab(object):
         while True:
 
             # step through each event
-            for e in self.events:
+            for i in range(len(self.events)):
 
+                e = self.events[i]
+                
                 # if current time meets event criteria and event isnt running
                 if e.checkTime(datetime.datetime.now().timetuple()) and not e.pid:
                     # flush stdout/err and fork process
@@ -162,7 +163,8 @@ def main():
         log = Log('test', logStdout=Log.levels.INFO)
         p = Prontab(ProntabEvent(prontabTask, args=[0], log=log),
                     ProntabEvent(prontabTask, args=[0], log=log),
-                    ProntabEvent(prontabTask, minute=r'*/2', args=[1], log=log))
+                    ProntabEvent(prontabTask, second=set(range(5)), minute=r'*/2',
+                                 args=[0], log=log))
         p.run()
     except error as e: print ' ...Done(', e.error, ')'
 
