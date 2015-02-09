@@ -51,12 +51,13 @@ class enum:
         SUNDAY = 6
 
 # error class - extends base exception class with a string
-class error(BaseException):
-
-    error = ''
+class error(Exception):
+    """extends Exception class with additional information and message listing"""
 
     def __init__(self, location, eType, *messages):
-        self.error = '{0}: {1} {2}'.format(location, eType, ' '.join(messages))
+        m = '%s: %s %s' % (location, eType, ' '.join(messages))
+        self.error = m  # for backwards compatibility
+        super(error, self).__init__(m)
 
 # aColor - returns ANSI codes for a given set of formats
 def aColor(codeString):
