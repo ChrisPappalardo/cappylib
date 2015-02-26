@@ -28,6 +28,9 @@
 # IMPORTS 
 ##############################################################################################
 
+from __future__ import division  # this fixes 1 / 2 = 0 problem
+from cappylib.general import *
+
 ##############################################################################################
 # GLOBAL VARS 
 ##############################################################################################
@@ -36,28 +39,44 @@
 # MAIN CODE
 ##############################################################################################
 
-def emat(a, yt, st1):
-    """calculates and returns exponential moving average for an alpha, value, and prior ema"""
+# MATH
+
+def acct(st1, yt1, t):
+    """returns smoothed accumulation for a t-period total and incremental value"""
+
+    return st1 - st1 / t + yt1
+
+def ema(l, a=None):
+    """returns exponential moving average for a list of values, with optional coefficient"""
+
+    r = 0.0
+
+    for i in range(0, len(l)):
+        r = emat(r, l[i], len(l), a)
+
+    return r
+
+def emat(st1, yt, t, a=None):
+    """
+    returns exponential moving average for a t-period EMA and incremental value
+    where st1 is the previous average, yt is the incr value, and t is the size of the avg
+          a can optionally be overridden with a specific coefficient, else 2/(t-1) is used
+    """
 
     # St = a * Yt + (1 - a) * St-1
     # where:
-    #   a = alpha factor from 0.0 - 1.0, but 2 / (N + 1) gives 86% weighting with large N's
-    #   Yt = data point for t
     #   St-1 = last St (i.e. St from t-1)
+    #   Yt = data point for t
+    #   a = alpha factor from 0.0 - 1.0, but 2 / (N + 1) gives 86% weighting with large N's
     # see http://en.wikipedia.org/wiki/Moving_average
 
+    a = 2.0 / (t + 1.0) if a == None else a
     return a * yt + (1.0 - a) * st1
 
-def ema(l, a=None):
-    """calcualtes and returns exponential moving average for a list of values"""
+def mmat(st1, yt, t):
+    """returns modified moving average for a t-period MMA and incremental value"""
 
-    r = 0.0
-    a = 2.0 / (len(l) + 1.0) if a == None else a  # see emai comments
-
-    for i in range(0, len(l)):
-        r = emat(a, l[i], r)
-
-    return r
+    return (st1 * (t - 1) + yt ) / t
 
 ##############################################################################################
 # TESTING
@@ -65,11 +84,17 @@ def ema(l, a=None):
 
 def main():
 
+    # acct test
+    a = acct(14, 2.75, 14)
+    print aColor('BLUE') + "acct... ", aColor('OFF'), True if a == 15.75 else a
     # ema tests
-    a = emat( 2.0 / (11.0 + 1.0), 1.0 - ( 2 / (11.0 + 1.0)), 0)
-    print "emat... ", True if round(a, 6) == 0.138889 else a
-    b = ema([1.0 - 2.0 / (11.0 + 1.0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-    print "ema... ", True if round(b, 6) == 0.022431 else b
+    a = ema([1 - 2 / (11 + 1), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    print aColor('BLUE') + "ema... ", aColor('OFF'), True if round(a, 6) == 0.022431 else a
+    a = emat(0.026917597, 0, 11)
+    print aColor('BLUE') + "emat... ", aColor('OFF'), True if round(a, 6) == 0.022431 else a
+    # mmat test
+    a = mmat(16, 32, 14)
+    print aColor('BLUE') + "emat... ", aColor('OFF'), True if round(a, 2) == 17.14 else a
 
 if __name__ == '__main__':
 
