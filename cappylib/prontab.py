@@ -158,15 +158,15 @@ def main():
     # prontab test
     def prontabTask(i, *args):
         if i: raise error('prontab', 'unit test -', 'test error')
-    print 'prontab.run()...'
+    print aColor('BLUE') + 'prontab.run()...', aColor('OFF')
     try:
         log = Log('test', logStdout=Log.levels.INFO)
         p = Prontab(ProntabEvent(prontabTask, args=[0], log=log),
                     ProntabEvent(prontabTask, args=[0], log=log),
-                    ProntabEvent(prontabTask, second=set(range(5)), minute=r'*/2',
-                                 args=[0], log=log))
+                    ProntabEvent(prontabTask, second=set(range(5)), minute=r'*/1',
+                                 args=[1], log=log))
         p.run()
-    except error as e: print ' ...Done(', e.error, ')'
+    except error as e: print aColor('BLUE') + ' ...Done(', e.error, ')', aColor('OFF')
 
 if __name__ == '__main__':
 

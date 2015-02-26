@@ -97,7 +97,7 @@ Available modules are as follows:
   * amqp
   * date_time
   * db
-  * financial
+  * mathfinstat
   * general
   * log
   * prontab
