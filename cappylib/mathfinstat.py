@@ -46,6 +46,11 @@ def acct(st1, yt1, t):
 
     return st1 - st1 / t + yt1
 
+def avg(y):
+    """returns simple average of list"""
+    
+    return sum(y) / len(y)
+
 def ema(l, a=None):
     """returns exponential moving average for a list of values, with optional coefficient"""
 
