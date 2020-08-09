@@ -104,9 +104,9 @@ class Prontab(object):
         # create child pid property in event object(s)
         for i in range(len(self.events)): self.events[i].pid = 0
 
-    def run(self):
-        """cycles through all events every second; if checkTime(), forks and calls
-           action with args, storing child pid in event object; only calls action on 
+    def run(self, wait=1):
+        """cycles through all events every wait second(s); if checkTime(), forks and calls
+           action with args, storing child pid in event object; only calls action on
            events with non-active child pids"""
 
         while True:
@@ -115,7 +115,7 @@ class Prontab(object):
             for i in range(len(self.events)):
 
                 e = self.events[i]
-                
+
                 # if current time meets event criteria and event isnt running
                 if e.checkTime(datetime.datetime.now().timetuple()) and not e.pid:
                     # flush stdout/err and fork process
@@ -138,7 +138,7 @@ class Prontab(object):
                 if pid > 0:
                     e.pid = 0
                     # if child did not exit cleanly, throw an error
-                    if status != 0: 
+                    if status != 0:
                         err = 'child (pid={0}) exited with status {1}'
                         raise error('Prontab', 'error', err.format(pid, status))
                     # otherwise, if a log object was passed to the constructor, log action
@@ -147,7 +147,7 @@ class Prontab(object):
                         m = [e.action.__name__, t.seconds + t.microseconds / 1000000.0]
                         e.log.logEvent(Log.levels.INFO, '{} completed in {} secs'.format(*m))
 
-            time.sleep(1)
+            time.sleep(wait)
 
 ##############################################################################################
 # TESTING #
