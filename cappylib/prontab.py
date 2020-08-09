@@ -104,7 +104,7 @@ class Prontab(object):
         # create child pid property in event object(s)
         for i in range(len(self.events)): self.events[i].pid = 0
 
-    def run(self, wait=1):
+    def run(self, wait=60):
         """cycles through all events every wait second(s); if checkTime(), forks and calls
            action with args, storing child pid in event object; only calls action on
            events with non-active child pids"""
